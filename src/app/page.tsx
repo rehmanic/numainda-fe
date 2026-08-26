@@ -3,8 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import numaindaIcon from '@/src/assets/numainda_new_icon.svg';
-import numaindaLogo from '@/src/assets/numainda_new_logo.svg';
-import { Phone, Building2, ShoppingCart, Headphones, Landmark } from 'lucide-react';
+import { Phone, Building2, ShoppingCart, Headphones, Landmark, Play, Pause } from 'lucide-react';
 import './page.css';
 
 export default function Home() {
@@ -159,7 +158,6 @@ export default function Home() {
       {/* ═══ Nav ═══ */}
       <nav className="sp-nav">
         <div className="sp-nav-brand">
-          <Image src={numaindaIcon} alt="Numainda" width={20} height={20} className="opacity-80" />
           <span>Numainda</span>
         </div>
         <ul className="sp-nav-links">
@@ -176,24 +174,18 @@ export default function Home() {
       {/* ═══ Hero ═══ */}
       <header id="sp-hero">
         <div className="sp-hero-copy">
-          <div className="sp-marks" aria-hidden="true"><i /><i /><i /></div>
-          <div className="hv" id="sb1">
-            <b className="sp-hero-label">NUMAINDA AI</b>
-            <span className="mi">Next-generation CSR</span>
-          </div>
-          <h1 className="hv" id="sb2">Scalable AI CSR<br />for modern<br />enterprises</h1>
+          <h1 className="hv" id="sb2">Speak your customer's language</h1>
           <div className="sp-hero-tags hv" id="sb3">
             <span>24/7 Support</span><span>·</span><span>API Native</span><span>·</span><span>Multilingual</span>
           </div>
-          <div className="sp-player hv" id="sb4">
-            <button className="sp-player-btn" onClick={() => setPlaying(!playing)} aria-label={playing ? 'Pause' : 'Play'}>
-              {playing ? '❚❚' : '▶'}
-            </button>
-            <div>
-              <div className="sp-player-meta"><b>Live Call Active</b><span>Caller: Sindhi · Resolution: In Progress</span></div>
+          <div className="sp-player-container hv" id="sb4">
+            <div className="sp-player">
+              <button className="sp-player-btn" onClick={() => setPlaying(!playing)} aria-label={playing ? 'Pause' : 'Play'}>
+                {playing ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+              </button>
               <canvas ref={canvasRef} aria-hidden="true" />
+              <span className="sp-player-time">{fmt(heroSecs)}</span>
             </div>
-            <span className="sp-player-time">{fmt(heroSecs)}</span>
           </div>
         </div>
         <div className="sp-hero-visual hv" id="sb5">
@@ -233,7 +225,6 @@ export default function Home() {
 
           <div className="sp-benefit rv">
             <div className="sp-benefit-main">
-              <span className="sp-benefit-num">01</span>
               <h2>Always<br />Available</h2>
               <span className="mi">24/7 · 365 Days · Zero Downtime</span>
             </div>
@@ -244,7 +235,6 @@ export default function Home() {
 
           <div className="sp-benefit sp-benefit-alt rv">
             <div className="sp-benefit-main">
-              <span className="sp-benefit-num">02</span>
               <h2>Every<br />Language</h2>
               <span className="mi">One Agent · Seven Languages · Native Fluency</span>
             </div>
@@ -255,7 +245,6 @@ export default function Home() {
 
           <div className="sp-benefit rv">
             <div className="sp-benefit-main">
-              <span className="sp-benefit-num">03</span>
               <h2>Zero<br />Wait</h2>
               <span className="mi">No IVR · No Hold Music · No Queues</span>
             </div>
@@ -266,7 +255,6 @@ export default function Home() {
 
           <div className="sp-benefit sp-benefit-alt rv">
             <div className="sp-benefit-main">
-              <span className="sp-benefit-num">04</span>
               <h2>Total<br />Insight</h2>
               <span className="mi">100% Transcription · Real-time Analytics</span>
             </div>
@@ -283,7 +271,7 @@ export default function Home() {
           <div className="sp-section-label rv"><span className="sp-label-num">02</span><span>Core Capabilities</span></div>
           <div className="sp-feat-grid">
             {heroFeatures.map((f, i) => (
-              <article key={i} className={`sp-feat-card rv${expandedFeature === i ? ' expanded' : ''}`} onClick={() => setExpandedFeature(expandedFeature === i ? null : i)} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') setExpandedFeature(expandedFeature === i ? null : i); }}>
+              <article key={i} className={`sp-feat-card${expandedFeature === i ? ' expanded' : ''}`} onClick={() => setExpandedFeature(expandedFeature === i ? null : i)} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') setExpandedFeature(expandedFeature === i ? null : i); }}>
                 <span className="sp-feat-num">0{i + 1}</span>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
@@ -316,7 +304,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="sp-step-panel rv" key={activeStep}>
+          <div className="sp-step-panel" key={activeStep}>
             <span className="sp-step-panel-num">{String(activeStep + 1).padStart(2, '0')}</span>
             <div>
               <h3>{processSteps[activeStep].title}</h3>
@@ -369,7 +357,7 @@ export default function Home() {
           <div className="sp-section-label rv"><span className="sp-label-num">06</span><span>Frequently Asked Questions</span></div>
           <div className="sp-faq-list">
             {faqs.map((faq, i) => (
-              <div key={i} className={`sp-faq-item rv${expandedFaq === i ? ' open' : ''}`}>
+              <div key={i} className={`sp-faq-item${expandedFaq === i ? ' open' : ''}`}>
                 <button className="sp-faq-q" onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}>
                   <span>{faq.q}</span>
                   <span className="sp-faq-toggle">+</span>
