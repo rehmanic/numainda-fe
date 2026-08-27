@@ -12,7 +12,7 @@
 .sp-section-label > span:last-child { font-family:'Chakra Petch',sans-serif; font-size:32px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#FF6B6B; }
 
 /* ── Progress Bar ─────────────────────────────────────────── */
-#sp-prog { position:fixed; left:0; top:0; height:2px; width:100%; background:var(--ink); transform:scaleX(0); transform-origin:left; z-index:80; will-change:transform; }
+#sp-prog { position:fixed; left:0; top:0; height:2px; width:100%; background:#FF6B6B; transform:scaleX(0); transform-origin:left; z-index:80; will-change:transform; }
 
 /* ── Navigation ───────────────────────────────────────────── */
 .sp-nav { position:fixed; inset:0 0 auto; height:var(--nav); z-index:70; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:0 var(--edge); background:rgba(244,245,246,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
