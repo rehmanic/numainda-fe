@@ -12,7 +12,6 @@ import PricingSection from '@/src/components/landing/PricingSection';
 import FaqSection from '@/src/components/landing/FaqSection';
 import ContactSection from '@/src/components/landing/ContactSection';
 import Footer from '@/src/components/landing/Footer';
-import './page.css';
 
 export default function Home() {
   useScrollReveal();

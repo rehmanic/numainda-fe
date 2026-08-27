@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Chakra_Petch, Roboto_Mono, Cairo } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const chakraPetch = Chakra_Petch({
+  variable: "--font-chakra-petch",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const robotoMono = Roboto_Mono({
+  variable: "--font-roboto-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const cairo = Cairo({
+  variable: "--font-cairo-ar",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "600", "700"],
 });
 
 import numaindaIcon from '@/src/assets/numainda_new_icon.svg';
@@ -26,9 +34,9 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${chakraPetch.variable} ${robotoMono.variable} ${cairo.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="bg-paper text-ink">{children}</body>
     </html>
   );
 }

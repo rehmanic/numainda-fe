@@ -11,5 +11,5 @@ export default function ProgressBar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  return <i id="sp-prog" />;
+  return <i id="sp-prog" className="fixed left-0 top-0 h-0.5 w-full bg-coral scale-x-0 origin-left z-80 will-change-transform" />;
 }
