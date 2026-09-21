@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   BookOpen,
@@ -11,6 +12,7 @@ import {
   PhoneCall,
   PhoneIncoming,
   PhoneOutgoing,
+  ChevronRight,
 } from "lucide-react"
 
 import {
@@ -23,29 +25,47 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 import NumaindaIcon from "@/src/assets/numainda_new_icon.svg"
 import NumaindaLogo from "@/src/assets/numainda_new_logo.svg"
 
-const overviewItems = [
+type BaseItem = { title: string; url: string }
+type NavItem = {
+  title: string
+  url?: string
+  icon?: any
+  items?: BaseItem[]
+}
+
+const overviewItems: NavItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
 ]
 
-const configureItems = [
+const configureItems: NavItem[] = [
   { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen },
   { title: "Tools", url: "/tools", icon: Wrench },
   { title: "Guardrails", url: "/guardrails", icon: Shield },
   { title: "Workflows", url: "/workflows", icon: Workflow },
 ]
 
-const deployItems = [
-  { title: "Calling", url: "/calling", icon: PhoneCall },
+const callingItems: NavItem[] = [
+  { title: "Inbound", url: "/calling/inbound", icon: PhoneIncoming },
+  { title: "Outbound", url: "/calling/outbound", icon: PhoneOutgoing },
 ]
 
-function NavGroup({ label, items }: { label: string; items: typeof overviewItems }) {
+function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
+  const pathname = usePathname()
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -54,12 +74,47 @@ function NavGroup({ label, items }: { label: string; items: typeof overviewItems
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton render={<Link href={item.url} />} tooltip={item.title}>
-                <item.icon />
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            item.items ? (
+              <Collapsible
+                key={item.title}
+                render={<SidebarMenuItem />}
+                defaultOpen={item.items.some((sub) => pathname?.startsWith(sub.url))}
+                className="group/collapsible"
+              >
+                <CollapsibleTrigger 
+                  render={<SidebarMenuButton tooltip={item.title} />}
+                >
+                  {item.icon && <item.icon />}
+                  <span>{item.title}</span>
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.items.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton 
+                          render={<Link href={subItem.url} />} 
+                          isActive={pathname === subItem.url}
+                        >
+                          <span>{subItem.title}</span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton 
+                  render={<Link href={item.url!} />} 
+                  tooltip={item.title}
+                  isActive={pathname === item.url}
+                >
+                  {item.icon && <item.icon />}
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
@@ -73,7 +128,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="px-4 py-3">
+      <SidebarHeader className="flex h-14 shrink-0 items-center justify-center border-b border-sidebar-border px-4 group-data-[collapsible=icon]:px-0">
         {isExpanded ? (
           <Image src={NumaindaLogo} alt="Numainda" height={28} />
         ) : (
@@ -83,7 +138,7 @@ export function AppSidebar() {
       <SidebarContent>
         <NavGroup label="Overview" items={overviewItems} />
         <NavGroup label="Configure" items={configureItems} />
-        <NavGroup label="Deploy" items={deployItems} />
+        <NavGroup label="Calling" items={callingItems} />
       </SidebarContent>
     </Sidebar>
   )

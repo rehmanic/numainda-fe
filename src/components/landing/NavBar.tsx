@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 
 export default function NavBar() {
@@ -100,6 +101,9 @@ export default function NavBar() {
           </ul>
           
           <div className="flex items-center gap-2 max-[1024px]:hidden pl-2">
+            <Link href="/dashboard" className="font-heading font-bold text-[11px] tracking-[.16em] uppercase text-paper px-4 py-3 cursor-pointer transition-all duration-300 hover:text-coral inline-block text-center">
+              Login
+            </Link>
             <a href="#sp-contact" className="font-heading font-bold text-[11px] tracking-[.16em] uppercase bg-paper text-ink px-6 py-3 cursor-pointer transition-all duration-300 hover:bg-coral hover:text-paper hover:scale-105 inline-block text-center">
               Book a Demo
             </a>
@@ -140,10 +144,17 @@ export default function NavBar() {
           </ul>
           
           <div 
-            className={`mt-14 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+            className={`mt-14 flex flex-col gap-4 items-center transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
             style={{ transitionDelay: `${mobileMenuOpen ? navLinks.length * 60 + 150 : 0}ms` }}
           >
-             <a 
+              <Link 
+                href="/dashboard" 
+                className="font-heading font-bold text-xs tracking-[.16em] uppercase text-paper px-10 py-4 inline-block transition-colors hover:text-coral"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <a 
                 href="#sp-contact" 
                 className="font-heading font-bold text-xs tracking-[.16em] uppercase bg-coral text-ink px-10 py-4 inline-block transition-transform active:scale-95"
                 onClick={() => setMobileMenuOpen(false)}
