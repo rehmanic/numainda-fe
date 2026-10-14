@@ -6,6 +6,79 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+// Standard DTMF frequency pairs (row freq, col freq) in Hz
+const DTMF_FREQUENCIES: Record<string, [number, number]> = {
+  '1': [697, 1209],
+  '2': [697, 1336],
+  '3': [697, 1477],
+  '4': [770, 1209],
+  '5': [770, 1336],
+  '6': [770, 1477],
+  '7': [852, 1209],
+  '8': [852, 1336],
+  '9': [852, 1477],
+  '*': [941, 1209],
+  '0': [941, 1336],
+  '#': [941, 1477],
+}
+
+let audioCtx: AudioContext | null = null
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null
+  const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+  if (!AudioContextClass) return null
+  if (!audioCtx || audioCtx.state === 'closed') {
+    audioCtx = new AudioContextClass()
+  }
+  return audioCtx
+}
+
+function playDtmfTone(key: string) {
+  try {
+    const freqs = DTMF_FREQUENCIES[key]
+    if (!freqs) return
+
+    const ctx = getAudioContext()
+    if (!ctx) return
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {})
+    }
+
+    const [f1, f2] = freqs
+    const now = ctx.currentTime
+    const duration = 0.16
+
+    const osc1 = ctx.createOscillator()
+    const osc2 = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+
+    osc1.type = 'sine'
+    osc1.frequency.setValueAtTime(f1, now)
+
+    osc2.type = 'sine'
+    osc2.frequency.setValueAtTime(f2, now)
+
+    // Gain envelope with audible volume (0.35) and smooth ramp to prevent clicks
+    gainNode.gain.setValueAtTime(0.001, now)
+    gainNode.gain.linearRampToValueAtTime(0.35, now + 0.015)
+    gainNode.gain.setValueAtTime(0.35, now + duration - 0.02)
+    gainNode.gain.linearRampToValueAtTime(0.001, now + duration)
+
+    osc1.connect(gainNode)
+    osc2.connect(gainNode)
+    gainNode.connect(ctx.destination)
+
+    osc1.start(now)
+    osc2.start(now)
+    osc1.stop(now + duration)
+    osc2.stop(now + duration)
+  } catch (err) {
+    console.warn("Unable to play dial sound:", err)
+  }
+}
+
 export function DialerModal({ 
   children,
   triggerClassName
@@ -65,6 +138,7 @@ export function DialerModal({
   const sendDTMF = (_key: string) => {}
 
   const handleKeyPress = (key: string) => {
+    playDtmfTone(key)
     if (isConnected) {
       sendDTMF(key)
     }
@@ -88,12 +162,12 @@ export function DialerModal({
   const renderKeypad = () => {
     const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"]
     return (
-      <div className="grid grid-cols-3 gap-3 my-6 max-w-[240px] mx-auto">
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-3 my-4 sm:my-6 max-w-[240px] w-full mx-auto">
         {keys.map((key) => (
           <Button
             key={key}
             variant="outline"
-            className="h-14 rounded-full text-lg font-medium border-sidebar-border bg-sidebar hover:bg-sidebar-accent transition-colors"
+            className="h-12 sm:h-14 rounded-full text-lg font-medium border-sidebar-border bg-sidebar hover:bg-sidebar-accent transition-colors"
             onClick={() => handleKeyPress(key)}
           >
             {key}
@@ -113,7 +187,7 @@ export function DialerModal({
       <DialogTrigger className={triggerClassName}>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-sidebar/80 backdrop-blur-xl border-sidebar-border text-sidebar-foreground shadow-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-sidebar/95 backdrop-blur-xl border-sidebar-border text-sidebar-foreground shadow-2xl p-4 sm:p-6 overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-center font-heading tracking-wide">
             {isIdle ? "Quick Call" : isRinging ? "Calling..." : "In Call"}

@@ -17,16 +17,16 @@ export default function OutboundPage() {
     <div className="flex flex-col h-full bg-background">
       
       {/* Top action bar (below header) */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-sidebar-border bg-sidebar/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-sidebar-border bg-sidebar/30">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-heading font-bold">Outbound Campaigns</h2>
         </div>
-        <div className="flex items-center gap-3">
-          <DialerModal triggerClassName="inline-flex shrink-0 items-center justify-center rounded-lg border text-sm font-medium transition-all gap-2 border-coral text-coral hover:bg-coral hover:text-white cursor-pointer h-9 px-4 py-2">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <DialerModal triggerClassName="inline-flex shrink-0 items-center justify-center rounded-lg border text-sm font-medium transition-all gap-2 border-coral text-coral hover:bg-coral hover:text-white cursor-pointer h-9 px-3 sm:px-4 py-2">
             <PhoneCall className="size-4" />
             Quick Call
           </DialerModal>
-          <Button className="gap-2 bg-coral hover:bg-coral/90 text-white">
+          <Button className="gap-2 bg-coral hover:bg-coral/90 text-white shrink-0 h-9 px-3 sm:px-4">
             <Plus className="size-4" />
             New Campaign
           </Button>
