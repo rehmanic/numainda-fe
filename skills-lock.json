@@ -48,6 +48,24 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/implement/SKILL.md",
       "computedHash": "b6371a0a6723bad551f3adc721e3729a6a97acfc3670dc2bdea198bbe78408c0"
+    },
+    "telnyx-webrtc-client-js": {
+      "source": "team-telnyx/ai",
+      "sourceType": "github",
+      "skillPath": "skills/telnyx-webrtc-client-js/SKILL.md",
+      "computedHash": "7134c4dfdfa3333c2305da0d7d64f81813a782a1eb894e0cbe7d0608d0c5e424"
+    },
+    "telnyx-webrtc-curl": {
+      "source": "team-telnyx/ai",
+      "sourceType": "github",
+      "skillPath": "skills/telnyx-webrtc-curl/SKILL.md",
+      "computedHash": "c0e88f6794434f2e0ddc86ddcb68e17cc41a34300b47b8423861667a7b955585"
+    },
+    "telnyx-webrtc-javascript": {
+      "source": "team-telnyx/ai",
+      "sourceType": "github",
+      "skillPath": "skills/telnyx-webrtc-javascript/SKILL.md",
+      "computedHash": "a9133a524af025a22796988f4831ceb529f0cef95ca6fd63700c0812678761a4"
     }
   }
 }
