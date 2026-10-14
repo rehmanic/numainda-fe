@@ -8,11 +8,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="font-inter">
       <TooltipProvider>
         <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <DashboardHeader />
-            {children}
-          </SidebarInset>
+            <AppSidebar />
+            <SidebarInset>
+              <DashboardHeader />
+              {children}
+            </SidebarInset>
         </SidebarProvider>
       </TooltipProvider>
     </div>

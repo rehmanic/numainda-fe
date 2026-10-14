@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-
 export function DialerModal({ 
   children,
   triggerClassName
@@ -15,48 +14,60 @@ export function DialerModal({
   triggerClassName?: string
 }) {
   const [open, setOpen] = useState(false)
-  const [callState, setCallState] = useState<"idle" | "ringing" | "connected">("idle")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [timer, setTimer] = useState(0)
+  const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle')
   const [isMuted, setIsMuted] = useState(false)
-  const [isHold, setIsHold] = useState(false)
+  const [isHeld, setIsHeld] = useState(false)
 
-  // Simulated Call Flow
-  useEffect(() => {
-    let timeout: NodeJS.Timeout
-    if (callState === "ringing") {
-      timeout = setTimeout(() => {
-        setCallState("connected")
-      }, 3000)
-    }
-    return () => clearTimeout(timeout)
-  }, [callState])
+  const status = 'ready'
+
+  // Derive UI states from call state
+  const isIdle = callState === 'idle'
+  const isRinging = callState === 'ringing'
+  const isConnected = callState === 'active'
 
   // Call Timer
   useEffect(() => {
     let interval: NodeJS.Timeout
-    if (callState === "connected" && !isHold) {
+    if (isConnected && !isHeld) {
       interval = setInterval(() => {
         setTimer((t) => t + 1)
       }, 1000)
     }
     return () => clearInterval(interval)
-  }, [callState, isHold])
+  }, [isConnected, isHeld])
+
+  // Reset timer when call ends
+  useEffect(() => {
+    if (isIdle) {
+      setTimer(0)
+    }
+  }, [isIdle])
 
   const handleCall = () => {
     if (!phoneNumber) return
-    setCallState("ringing")
+    setCallState('ringing')
     setTimer(0)
-    setIsMuted(false)
-    setIsHold(false)
+    setTimeout(() => {
+      setCallState('active')
+    }, 2000)
   }
 
   const handleEndCall = () => {
-    setCallState("idle")
-    setPhoneNumber("")
+    setCallState('idle')
+    setIsMuted(false)
+    setIsHeld(false)
   }
 
+  const toggleMute = () => setIsMuted((prev) => !prev)
+  const toggleHold = () => setIsHeld((prev) => !prev)
+  const sendDTMF = (_key: string) => {}
+
   const handleKeyPress = (key: string) => {
+    if (isConnected) {
+      sendDTMF(key)
+    }
     setPhoneNumber((prev) => prev + key)
   }
 
@@ -69,6 +80,10 @@ export function DialerModal({
     const secs = seconds % 60
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
+
+  // Connection status indicator
+  const statusColor = status === 'ready' ? 'bg-green-500' : status === 'connecting' ? 'bg-yellow-500' : status === 'error' ? 'bg-red-500' : 'bg-gray-500'
+  const statusLabel = status === 'ready' ? 'Connected' : status === 'connecting' ? 'Connecting...' : status === 'error' ? 'Connection Error' : 'Disconnected'
 
   const renderKeypad = () => {
     const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"]
@@ -91,29 +106,29 @@ export function DialerModal({
   return (
     <Dialog open={open} onOpenChange={(val) => {
       setOpen(val)
-      if (!val) {
-        setCallState("idle")
+      if (!val && isIdle) {
         setPhoneNumber("")
       }
     }}>
       <DialogTrigger className={triggerClassName}>
         {children}
       </DialogTrigger>
-      {/* 
-        We use a frosted glass background on the Dialog overlay by default in shadcn if configured, 
-        but we can enforce it on the content wrapper as well.
-      */}
       <DialogContent className="sm:max-w-md bg-sidebar/80 backdrop-blur-xl border-sidebar-border text-sidebar-foreground shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-center font-heading tracking-wide">
-            {callState === "idle" ? "Quick Call" : callState === "ringing" ? "Calling..." : "In Call"}
+            {isIdle ? "Quick Call" : isRinging ? "Calling..." : "In Call"}
           </DialogTitle>
+          {/* Connection status dot */}
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <div className={cn("size-2 rounded-full", statusColor)} />
+            <span className="text-xs text-sidebar-foreground/50">{statusLabel}</span>
+          </div>
         </DialogHeader>
 
         <div className="flex flex-col items-center py-6">
           
           {/* Idle State (Dialer) */}
-          {callState === "idle" && (
+          {isIdle && (
             <div className="w-full">
               <div className="flex items-center gap-2 max-w-[240px] mx-auto">
                 <Input
@@ -140,7 +155,7 @@ export function DialerModal({
                 <Button 
                   className="rounded-full size-16 bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                   onClick={handleCall}
-                  disabled={!phoneNumber}
+                  disabled={!phoneNumber || status !== 'ready'}
                 >
                   <Phone className="size-6 fill-current" />
                 </Button>
@@ -149,7 +164,7 @@ export function DialerModal({
           )}
 
           {/* Ringing State */}
-          {callState === "ringing" && (
+          {isRinging && (
             <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
               <div className="relative flex items-center justify-center size-24 mb-6">
                 <div className="absolute inset-0 rounded-full border-2 border-coral/50 animate-ping" />
@@ -171,14 +186,14 @@ export function DialerModal({
           )}
 
           {/* Connected State */}
-          {callState === "connected" && (
+          {isConnected && (
             <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300 w-full">
               <div className="relative z-10 flex items-center justify-center size-20 rounded-full bg-sidebar border border-coral/30 text-coral shadow-inner mb-4">
                 <Phone className="size-8" />
               </div>
               
               <h3 className="text-2xl font-bold tracking-widest font-mono mb-1">{phoneNumber}</h3>
-              <p className={cn("text-lg font-mono mb-8", isHold ? "text-yellow-500" : "text-green-500")}>
+              <p className={cn("text-lg font-mono mb-8", isHeld ? "text-yellow-500" : "text-green-500")}>
                 {formatTime(timer)}
               </p>
 
@@ -187,7 +202,7 @@ export function DialerModal({
                   <Button
                     variant="outline"
                     className={cn("rounded-full size-14 border-sidebar-border transition-all", isMuted && "bg-coral text-white border-coral")}
-                    onClick={() => setIsMuted(!isMuted)}
+                    onClick={toggleMute}
                   >
                     {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
                   </Button>
@@ -197,10 +212,10 @@ export function DialerModal({
                 <div className="flex flex-col items-center gap-2">
                   <Button
                     variant="outline"
-                    className={cn("rounded-full size-14 border-sidebar-border transition-all", isHold && "bg-yellow-500 text-white border-yellow-500")}
-                    onClick={() => setIsHold(!isHold)}
+                    className={cn("rounded-full size-14 border-sidebar-border transition-all", isHeld && "bg-yellow-500 text-white border-yellow-500")}
+                    onClick={toggleHold}
                   >
-                    {isHold ? <Play className="size-5" /> : <Pause className="size-5" />}
+                    {isHeld ? <Play className="size-5" /> : <Pause className="size-5" />}
                   </Button>
                   <span className="text-xs text-sidebar-foreground/60">Hold</span>
                 </div>
