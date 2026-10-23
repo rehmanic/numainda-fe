@@ -1,3 +1,5 @@
+import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -23,7 +25,15 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       lang="en"
       className={`${inter.variable} font-sans`}
     >
-      <body className="bg-paper text-ink">{children}</body>
+      <body className="bg-paper text-ink">
+        <ClerkProvider
+          appearance={{ theme: shadcn }}
+          signInFallbackRedirectUrl="/dashboard"
+          signUpFallbackRedirectUrl="/dashboard"
+        >
+          {children}
+        </ClerkProvider>
+      </body>
     </html>
   );
 }

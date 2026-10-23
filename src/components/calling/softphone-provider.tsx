@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { useAuth } from '@clerk/nextjs';
 
 export type SoftphoneStatus = 'idle' | 'connecting' | 'ready' | 'error';
 export type CallState = 'idle' | 'ringing' | 'active' | 'held' | 'hangup';
@@ -26,6 +27,7 @@ const SoftphoneContext = createContext<SoftphoneContextType | undefined>(undefin
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export function SoftphoneProvider({ children }: { children: React.ReactNode }) {
+  const { getToken, isSignedIn, isLoaded } = useAuth();
   const [status, setStatus] = useState<SoftphoneStatus>('idle');
   const [callState, setCallState] = useState<CallState>('idle');
   const [remoteParty, setRemoteParty] = useState('');
@@ -40,22 +42,34 @@ export function SoftphoneProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize softphone client
   const initializeClient = useCallback(async () => {
+    if (!isSignedIn) {
+      setStatus('idle');
+      return;
+    }
+
     try {
       setStatus('connecting');
       setErrorMessage(undefined);
 
       // Fetch client login token from provider-agnostic backend endpoint
       let response: Response;
-      const headers = { 'ngrok-skip-browser-warning': 'true' };
+      const clerkToken = await getToken();
+      const headers: Record<string, string> = {
+        'ngrok-skip-browser-warning': 'true',
+      };
+      if (clerkToken) {
+        headers['Authorization'] = `Bearer ${clerkToken}`;
+      }
+
       try {
         response = await fetch(`${API_BASE_URL}/telephony/token`, { headers });
         if (!response.ok && API_BASE_URL !== 'http://localhost:4000') {
           // Fallback to local dev backend port 4000
-          response = await fetch('http://localhost:4000/telephony/token');
+          response = await fetch('http://localhost:4000/telephony/token', { headers });
         }
       } catch (networkErr) {
         if (API_BASE_URL !== 'http://localhost:4000') {
-          response = await fetch('http://localhost:4000/telephony/token');
+          response = await fetch('http://localhost:4000/telephony/token', { headers });
         } else {
           throw networkErr;
         }
@@ -177,16 +191,18 @@ export function SoftphoneProvider({ children }: { children: React.ReactNode }) {
       setStatus('error');
       setErrorMessage(err?.message || 'Failed to initialize softphone');
     }
-  }, []);
+  }, [getToken, isSignedIn]);
 
   useEffect(() => {
-    initializeClient();
+    if (isLoaded && isSignedIn) {
+      initializeClient();
+    }
     return () => {
       try {
         clientRef.current?.disconnect();
       } catch {}
     };
-  }, [initializeClient]);
+  }, [isLoaded, isSignedIn, initializeClient]);
 
   const makeCall = useCallback(
     (destinationNumber: string) => {

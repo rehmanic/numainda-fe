@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'
+import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
+import { Show, UserButton } from '@clerk/nextjs';
 import NumaindaIcon from '@/src/assets/numainda_new_icon.svg';
 
 export default function NavBar() {
@@ -107,12 +108,27 @@ export default function NavBar() {
           </ul>
 
           <div className="flex items-center gap-2 max-[1024px]:hidden pl-2">
-            <Link href="/dashboard" className="font-heading font-bold text-[11px] tracking-[.16em] uppercase text-paper px-4 py-3 cursor-pointer transition-all duration-300 hover:text-coral inline-block text-center">
-              Login
-            </Link>
-            <a href="#sp-contact" className="font-heading font-bold text-[11px] tracking-[.16em] uppercase bg-paper text-ink px-6 py-3 rounded-full cursor-pointer transition-all duration-300 hover:bg-coral hover:text-paper hover:scale-105 inline-block text-center">
-              Book a Demo
-            </a>
+            <Show when="signed-out">
+              <Link
+                href="/sign-in"
+                className="font-heading font-bold text-[11px] tracking-[.16em] uppercase text-paper px-4 py-3 cursor-pointer transition-all duration-300 hover:text-coral inline-block text-center"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="font-heading font-bold text-[11px] tracking-[.16em] uppercase bg-paper text-ink px-5 py-3 rounded-full cursor-pointer transition-all duration-300 hover:bg-coral hover:text-paper hover:scale-105 inline-block text-center"
+              >
+                Sign Up
+              </Link>
+            </Show>
+            <Show when="signed-in">
+              <Link href="/dashboard" className="font-heading font-bold text-[11px] tracking-[.16em] uppercase text-paper px-4 py-3 cursor-pointer transition-all duration-300 hover:text-coral inline-block text-center">
+                Dashboard
+              </Link>
+              <UserButton />
+            </Show>
+
           </div>
 
           {/* Mobile menu toggle */}
@@ -153,20 +169,35 @@ export default function NavBar() {
             className={`mt-14 flex flex-col gap-4 items-center transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
             style={{ transitionDelay: `${mobileMenuOpen ? navLinks.length * 60 + 150 : 0}ms` }}
           >
-            <Link
-              href="/dashboard"
-              className="font-heading font-bold text-xs tracking-[.16em] uppercase text-paper px-10 py-4 inline-block transition-colors hover:text-coral"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Login
-            </Link>
-            <a
-              href="#sp-contact"
-              className="font-heading font-bold text-xs tracking-[.16em] uppercase bg-coral text-ink px-10 py-4 rounded-full inline-block transition-transform active:scale-95"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Book a Demo
-            </a>
+            <Show when="signed-out">
+              <Link
+                href="/sign-in"
+                className="font-heading font-bold text-xs tracking-[.16em] uppercase text-paper px-10 py-4 inline-block transition-colors hover:text-coral"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="font-heading font-bold text-xs tracking-[.16em] uppercase bg-paper text-ink px-10 py-4 rounded-full inline-block transition-transform active:scale-95"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign Up
+              </Link>
+            </Show>
+            <Show when="signed-in">
+              <Link
+                href="/dashboard"
+                className="font-heading font-bold text-xs tracking-[.16em] uppercase text-paper px-10 py-4 inline-block transition-colors hover:text-coral"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <div className="py-2">
+                <UserButton />
+              </div>
+            </Show>
+
           </div>
         </div>
       </div>
