@@ -3,6 +3,8 @@
 import { PhoneIncoming, PhoneMissed, Clock, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useSoftphone } from "@/src/components/calling/softphone-provider"
+
 const recentInbound = [
   { id: "IN-001", from: "+1 (415) 555-1234", status: "Answered", duration: "4:32", time: "2 mins ago" },
   { id: "IN-002", from: "+1 (212) 555-5678", status: "Missed", duration: "—", time: "15 mins ago" },
@@ -12,10 +14,10 @@ const recentInbound = [
 ]
 
 export default function InboundPage() {
-  const status = 'ready'
+  const { status, errorMessage } = useSoftphone()
 
   const statusColor = status === 'ready' ? 'bg-green-500' : status === 'connecting' ? 'bg-yellow-500' : status === 'error' ? 'bg-red-500' : 'bg-gray-500'
-  const statusLabel = status === 'ready' ? 'Listening for calls' : status === 'connecting' ? 'Connecting...' : status === 'error' ? 'Connection Error' : 'Disconnected'
+  const statusLabel = status === 'ready' ? 'Listening for calls' : status === 'connecting' ? 'Connecting...' : status === 'error' ? (errorMessage || 'Connection Error') : 'Disconnected'
 
   return (
     <div className="flex flex-col h-full bg-background">

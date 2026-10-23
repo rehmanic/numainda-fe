@@ -18,6 +18,7 @@ const DTMF_FREQUENCIES: Record<string, [number, number]> = {
   '8': [852, 1336],
   '9': [852, 1477],
   '*': [941, 1209],
+  '+': [941, 1209],
   '0': [941, 1336],
   '#': [941, 1477],
 }
@@ -79,6 +80,8 @@ function playDtmfTone(key: string) {
   }
 }
 
+import { useSoftphone } from "./softphone-provider"
+
 export function DialerModal({ 
   children,
   triggerClassName
@@ -89,16 +92,25 @@ export function DialerModal({
   const [open, setOpen] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("")
   const [timer, setTimer] = useState(0)
-  const [callState, setCallState] = useState<'idle' | 'ringing' | 'active'>('idle')
-  const [isMuted, setIsMuted] = useState(false)
-  const [isHeld, setIsHeld] = useState(false)
 
-  const status = 'ready'
+  const {
+    status,
+    callState,
+    remoteParty,
+    isMuted,
+    isHeld,
+    errorMessage,
+    makeCall,
+    hangup,
+    toggleMute,
+    toggleHold,
+    sendDTMF,
+  } = useSoftphone()
 
-  // Derive UI states from call state
+  // Derive UI states from softphone call state
   const isIdle = callState === 'idle'
   const isRinging = callState === 'ringing'
-  const isConnected = callState === 'active'
+  const isConnected = callState === 'active' || callState === 'held'
 
   // Call Timer
   useEffect(() => {
@@ -119,28 +131,22 @@ export function DialerModal({
   }, [isIdle])
 
   const handleCall = () => {
-    if (!phoneNumber) return
-    setCallState('ringing')
+    if (!phoneNumber || status !== 'ready') return
+    makeCall(phoneNumber)
     setTimer(0)
-    setTimeout(() => {
-      setCallState('active')
-    }, 2000)
   }
 
   const handleEndCall = () => {
-    setCallState('idle')
-    setIsMuted(false)
-    setIsHeld(false)
+    hangup()
   }
-
-  const toggleMute = () => setIsMuted((prev) => !prev)
-  const toggleHold = () => setIsHeld((prev) => !prev)
-  const sendDTMF = (_key: string) => {}
 
   const handleKeyPress = (key: string) => {
     playDtmfTone(key)
     if (isConnected) {
-      sendDTMF(key)
+      // In active calls, DTMF RFC 2833 only accepts 0-9, *, #
+      if (key !== '+') {
+        sendDTMF(key)
+      }
     }
     setPhoneNumber((prev) => prev + key)
   }
@@ -156,11 +162,26 @@ export function DialerModal({
   }
 
   // Connection status indicator
-  const statusColor = status === 'ready' ? 'bg-green-500' : status === 'connecting' ? 'bg-yellow-500' : status === 'error' ? 'bg-red-500' : 'bg-gray-500'
-  const statusLabel = status === 'ready' ? 'Connected' : status === 'connecting' ? 'Connecting...' : status === 'error' ? 'Connection Error' : 'Disconnected'
+  const statusColor =
+    status === 'ready'
+      ? 'bg-green-500'
+      : status === 'connecting'
+      ? 'bg-yellow-500'
+      : status === 'error'
+      ? 'bg-red-500'
+      : 'bg-gray-500'
+
+  const statusLabel =
+    status === 'ready'
+      ? 'Connected'
+      : status === 'connecting'
+      ? 'Connecting...'
+      : status === 'error'
+      ? (errorMessage || 'Connection Error')
+      : 'Disconnected'
 
   const renderKeypad = () => {
-    const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"]
+    const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "0", "#"]
     return (
       <div className="grid grid-cols-3 gap-2.5 sm:gap-3 my-4 sm:my-6 max-w-[240px] w-full mx-auto">
         {keys.map((key) => (
@@ -247,7 +268,7 @@ export function DialerModal({
                   <Phone className="size-6 animate-pulse" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold tracking-widest font-mono mb-2">{phoneNumber}</h3>
+              <h3 className="text-2xl font-bold tracking-widest font-mono mb-2">{remoteParty || phoneNumber}</h3>
               <p className="text-sm text-sidebar-foreground/60 mb-10">Ringing...</p>
               
               <Button 
@@ -266,7 +287,7 @@ export function DialerModal({
                 <Phone className="size-8" />
               </div>
               
-              <h3 className="text-2xl font-bold tracking-widest font-mono mb-1">{phoneNumber}</h3>
+              <h3 className="text-2xl font-bold tracking-widest font-mono mb-1">{remoteParty || phoneNumber}</h3>
               <p className={cn("text-lg font-mono mb-8", isHeld ? "text-yellow-500" : "text-green-500")}>
                 {formatTime(timer)}
               </p>
