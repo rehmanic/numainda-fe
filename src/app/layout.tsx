@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import numaindaIcon from '@/src/assets/numainda_new_icon.svg';
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
         >
           {children}
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
