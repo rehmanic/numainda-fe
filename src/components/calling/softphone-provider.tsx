@@ -148,7 +148,9 @@ export function SoftphoneProvider({ children }: { children: React.ReactNode }) {
       });
 
       client.on('telnyx.notification', (notification: any) => {
-        console.log('Telnyx notification:', notification.type, notification);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Telnyx notification:', notification.type, notification);
+        }
         if (notification.type === 'callUpdate' && notification.call) {
           const call = notification.call;
           activeCallRef.current = call;
